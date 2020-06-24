@@ -1,4 +1,5 @@
 'use strict';
+/* jshint ignore:start */
 
 var intlpnCtrl = function( $ionicModal, $scope, intlpnUtils ) {
     var self = $scope;
@@ -11,7 +12,6 @@ var intlpnCtrl = function( $ionicModal, $scope, intlpnUtils ) {
     self.boxHeaderClass = angular.isDefined( self.boxHeaderClass )?self.boxHeaderClass:"bar-positive";
     self.boxHeaderTitle = angular.isDefined(self.boxHeaderTitle )?self.boxHeaderTitle:"Search";
     self.searchPlaceholder = angular.isDefined( self.searchPlaceholder )?self.searchPlaceholder:self.boxHeaderTitle;
-
     self._updateDialCode = function(newDialCode) {
         var newNumber;
 
@@ -48,7 +48,13 @@ var intlpnCtrl = function( $ionicModal, $scope, intlpnUtils ) {
     };
 
     self.isValid = function( number, countryCode ) {
-        return intlTelInputUtils.isValidNumber(number, countryCode);
+        var isValidPhoneNumber = intlTelInputUtils.isValidNumber(number, countryCode);
+        if (angular.isUndefinedOrNullOrEmpty(number)) {
+            $scope.isValidPhone = true;
+        } else {
+            $scope.isValidPhone = isValidPhoneNumber;
+        }
+        return isValidPhoneNumber;
     }
 
     //default value
@@ -256,6 +262,8 @@ angular.module('intlpnIonic', ['ionic'])
         require: '^ngModel',
         scope: {
             ngModel: '=',
+            disabled: '=?',
+            isValidPhone: '=?',
             placeholder: '@',
             defaultCountry: '@',
             onlyCountry: '=',
@@ -358,7 +366,7 @@ angular.module('intlpnIonic', ['ionic'])
                     return scope.isValid( modelValue );
                 }
             };
-            //manage focus/blur of the phone field
+            //manage focus/blur of the phone field;
             var input = element.find('input');
             input.bind('focus', function() {
                 if( scope.national ) {
@@ -438,6 +446,9 @@ angular.module('intlpnIonic', ['ionic'])
                 scope: scope
             });
             scope.pickCountry = function() {
+                if (scope.disabled) {
+                    return;
+                }
                 if( scope.intlpnHelper.countries.length == 1 )
                     return;
                 scope.modalScope.pattern = '';
@@ -454,7 +465,7 @@ angular.module('intlpnIonic', ['ionic'])
         replace:true,
         template: '<div class="item item-input intlpn-container">' +
                         '<i class="icon icon-intlpn-flag {{ isocode }}" ng-click="pickCountry()" ></i>'+
-                        '<input intlpn-formatter national-mode="nationalMode" iso-code="{{isocode}}" type="tel" placeholder="{{placeholder||\'Phone number\'}}" ng-model="phone" >' +
+                        '<input intlpn-formatter national-mode="nationalMode" ng-disabled="{{disabled}}" iso-code="{{isocode}}" type="tel" placeholder="{{placeholder||\'Phone number\'}}" ng-model="phone" >' +
                 '</div>'
     };
 }])
@@ -469,3 +480,4 @@ angular.module('intlpnIonic', ['ionic'])
         return utils.formatNumberByType(input, null, t);
     }
 });
+/* jshint ignore:end */
